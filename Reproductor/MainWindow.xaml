@@ -34,5 +34,14 @@
         <TextBlock x:Name="lbl_FadeOut" HorizontalAlignment="Left" Margin="178,226,0,0" TextWrapping="Wrap" VerticalAlignment="Top" RenderTransformOrigin="-0.776,0.062"><Run Text="Duración Fade "/><Run Text="Out"/><Run Text=" (s"/><Run Text=")"/></TextBlock>
         <TextBox x:Name="txt_FadeOut" HorizontalAlignment="Left" Height="23" Margin="178,247,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Text="0" TextAlignment="Right"/>
         <Button x:Name="btn_FadeOut" Content="Fade Out" HorizontalAlignment="Left" Margin="322,247,0,0" VerticalAlignment="Top" Width="81" RenderTransformOrigin="-0.013,0.65" Height="23" Click="btn_FadeOut_Click"/>
+        <TextBlock HorizontalAlignment="Left" Margin="20,300,0,0" TextWrapping="Wrap" Text="Delay." VerticalAlignment="Top" FontSize="14"/>
+        <CheckBox Content="Activo" HorizontalAlignment="Left" Margin="20,331,0,0" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="152,300,0,0" TextWrapping="Wrap" Text="Offset:" VerticalAlignment="Top" FontSize="14" Width="48"/>
+        <Slider HorizontalAlignment="Left" Margin="152,328,0,0" VerticalAlignment="Top" Width="76"/>
+        <TextBlock HorizontalAlignment="Left" Margin="152,300,0,0" TextWrapping="Wrap" Text="Offset:" VerticalAlignment="Top" FontSize="14" Width="48"/>
+        <TextBlock HorizontalAlignment="Left" Margin="195,351,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="14" Width="48"><Run Text="0 ms"/><LineBreak/><Run/></TextBlock>
+        <TextBlock HorizontalAlignment="Left" Margin="279,300,0,0" TextWrapping="Wrap" Text="Ganancia:" VerticalAlignment="Top" FontSize="14" Width="68"/>
+        <Slider HorizontalAlignment="Left" Margin="279,328,0,0" VerticalAlignment="Top" Width="76"/>
+        <TextBlock HorizontalAlignment="Left" Margin="322,351,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="14" Width="48"><Run Text="0 "/><LineBreak/><Run/></TextBlock>
     </Grid>
 </Window>
