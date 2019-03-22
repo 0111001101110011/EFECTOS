@@ -12,10 +12,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Windows.Threading;
+
 using Microsoft.Win32;
+
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+
+using System.Windows.Threading;
 
 namespace Reproductor
 {
@@ -25,32 +28,27 @@ namespace Reproductor
     public partial class MainWindow : Window
     {
         AudioFileReader reader;
-
-        // Nuestra comunicación con la tarjeta de sonido
+        //Nuestra comunicacion con la tarjeta de sonido
         WaveOutEvent output;
 
         DispatcherTimer timer;
         EfectoVolumen volume;
         FadeInOutSampleProvider fades;
-
+        Delay delay;
         bool fadingOut = false;
 
         bool dragging = false;
-
-        Delay delay;
 
         public MainWindow()
         {
             InitializeComponent();
             LlenarComboSalida();
 
-            // Inicializar el timer
+            //Inicializar timer
+            //Establecer tiempo entre ejecuciones
+            //Establecer lo que se va a ejecutar
             timer = new DispatcherTimer();
-
-            // Definir el intervalo durante el cual se ejecutará cada hilo
-            timer.Interval = TimeSpan.FromMilliseconds(1000);
-
-            // Establecer el proceso que se ejecutará
+            timer.Interval = TimeSpan.FromMilliseconds(500);
             timer.Tick += Timer_Tick;
 
 
@@ -60,85 +58,101 @@ namespace Reproductor
         {
             if (reader != null)
             {
-                lbl_Tiempo_Actual.Text = reader.CurrentTime.ToString().Substring(0, 8);
+                lblTiempoActual.Text =
+                    reader.CurrentTime.ToString().Substring(0, 8);
                 if (!dragging)
                 {
-                    sld_Reproduccion.Value = reader.CurrentTime.TotalSeconds;
+                    sldReproduccion.Value =
+                        reader.CurrentTime.TotalSeconds;
                 }
+
             }
         }
 
         private void LlenarComboSalida()
         {
-            cb_Salida.Items.Clear();
+            cbSalida.Items.Clear();
             for (int i = 0; i < WaveOut.DeviceCount; i++)
             {
-                WaveOutCapabilities capacidades = WaveOut.GetCapabilities(i);
-                cb_Salida.Items.Add(capacidades.ProductName);
+                WaveOutCapabilities capacidades =
+                    WaveOut.GetCapabilities(i);
+                cbSalida.Items.Add(capacidades.ProductName);
             }
-            cb_Salida.SelectedIndex = 0;
+            cbSalida.SelectedIndex = 0;
         }
 
-        private void btn_Elegir_Archivo_Click(object sender, RoutedEventArgs e)
+        private void btnElegirArchivo_Click(object sender,
+            RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+            OpenFileDialog openFileDialog =
+                new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
-                txt_Direccion_Archivo.Text = openFileDialog.FileName;
+                txtRutaArchivo.Text =
+                    openFileDialog.FileName;
             }
         }
 
-        private void btn_Reproducir_Click(object sender, RoutedEventArgs e)
+        private void btnReproducir_Click(object sender, RoutedEventArgs e)
         {
-            if (output != null && output.PlaybackState == PlaybackState.Paused)
+
+            if (output != null &&
+                output.PlaybackState == PlaybackState.Paused)
             {
                 output.Play();
-                btn_Reproducir.IsEnabled = false;
-                btn_Pausa.IsEnabled = true;
-                btn_Detener.IsEnabled = true;
+                btnReproducir.IsEnabled = false;
+                btnPausa.IsEnabled = true;
+                btnDetener.IsEnabled = true;
             }
             else
             {
-                if (txt_Direccion_Archivo.Text != "")
-                {
-                    reader = new AudioFileReader(txt_Direccion_Archivo.Text);
+                reader =
+                    new AudioFileReader(txtRutaArchivo.Text);
 
-                    delay = new Delay(reader);
+                delay =
+                    new Delay(reader);
+                delay.Activo = (bool)cbDelayActivo.IsChecked;
+                delay.OffsetMilisegundos = (int)sldDelayOffset.Value;
+                fades = new FadeInOutSampleProvider(
+                    delay, true);
+                double milisegundosFadeIn =
+                    Double.Parse(txtDuracionFadeIn.Text)
+                        * 1000.0;
+                fades.BeginFadeIn(milisegundosFadeIn);
+                fadingOut = false;
+                output = new WaveOutEvent();
 
-                    fades = new FadeInOutSampleProvider(delay, true);
+                output.DeviceNumber =
+                    cbSalida.SelectedIndex;
 
-                    fades = new FadeInOutSampleProvider(reader, true);
-                    double milisegundosFadeIn = Double.Parse(txt_FadeIn.Text) * 1000.0;
-                    fades.BeginFadeIn(milisegundosFadeIn);
-                    fadingOut = false;
+                output.PlaybackStopped += Output_PlaybackStopped;
 
-                    output = new WaveOutEvent();
+                volume =
+                    new EfectoVolumen(fades);
 
-                    output.DeviceNumber = cb_Salida.SelectedIndex;
+                volume.Volume =
+                    (float)sldVolumen.Value;
 
-                    // Los rayitos(eventos) responden a funciones mediante el operador +=
-                    output.PlaybackStopped += Output_PlaybackStopped;
+                output.Init(volume);
+                output.Play();
 
-                    volume = new EfectoVolumen(fades);
+                btnDetener.IsEnabled = true;
+                btnPausa.IsEnabled = true;
+                btnReproducir.IsEnabled = false;
 
-                    //volume.Volume = (float)sld_Volumen.Value;
+                lblTiempoTotal.Text =
+                    reader.TotalTime.ToString().Substring(0, 8);
+                lblTiempoActual.Text =
+                    reader.CurrentTime.ToString().Substring(0, 8);
+                sldReproduccion.Maximum =
+                    reader.TotalTime.TotalSeconds;
+                sldReproduccion.Value =
+                    reader.CurrentTime.TotalSeconds;
 
-                    output.Init(volume);
-                    output.Play();
+                timer.Start();
 
-                    btn_Pausa.IsEnabled = true;
-                    btn_Detener.IsEnabled = true;
-                    btn_Reproducir.IsEnabled = false;
-
-                    lbl_Tiempo_Total.Text = reader.TotalTime.ToString().Substring(0, 8);
-                    lbl_Tiempo_Actual.Text = reader.CurrentTime.ToString().Substring(0, 8);
-
-                    sld_Reproduccion.Maximum = reader.TotalTime.TotalSeconds;
-                    sld_Reproduccion.Minimum = 0;
-
-                    timer.Start();
-                }
             }
+
         }
 
         private void Output_PlaybackStopped(object sender, StoppedEventArgs e)
@@ -148,65 +162,93 @@ namespace Reproductor
             timer.Stop();
         }
 
-        private void btn_Pausa_Click(object sender, RoutedEventArgs e)
+        private void btnPausa_Click(object sender, RoutedEventArgs e)
         {
             if (output != null)
             {
                 output.Pause();
-
-                btn_Reproducir.IsEnabled = true;
-                btn_Pausa.IsEnabled = false;
-                btn_Detener.IsEnabled = true;
+                btnDetener.IsEnabled = true;
+                btnPausa.IsEnabled = false;
+                btnReproducir.IsEnabled = true;
             }
-
         }
 
-        private void btn_Detener_Click(object sender, RoutedEventArgs e)
+        private void btnDetener_Click(object sender, RoutedEventArgs e)
         {
-            output.Stop();
-
-            btn_Reproducir.IsEnabled = true;
-            btn_Pausa.IsEnabled = false;
-            btn_Detener.IsEnabled = false;
-            txt_Direccion_Archivo.Text = "";
-            sld_Reproduccion.Value = 0;
-            lbl_Tiempo_Actual.Text = "00:00";
-            lbl_Tiempo_Total.Text = "00:00";
+            if (output != null)
+            {
+                output.Stop();
+                btnReproducir.IsEnabled = true;
+                btnPausa.IsEnabled = false;
+                btnDetener.IsEnabled = false;
+            }
         }
 
-        private void sld_Reproduccion_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        private void sldReproduccion_DragStarted
+            (object sender,
+            System.Windows.Controls.Primitives.DragStartedEventArgs e)
         {
             dragging = true;
         }
 
-        private void sld_Reproduccion_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        private void sldReproduccion_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             dragging = false;
-            if (reader != null && output != null && (output.PlaybackState != PlaybackState.Stopped))
+            if (reader != null && output != null &&
+                output.PlaybackState != PlaybackState.Stopped)
             {
-                reader.CurrentTime = TimeSpan.FromSeconds(sld_Reproduccion.Value);
+                reader.CurrentTime =
+                    TimeSpan.FromSeconds(sldReproduccion.Value);
             }
         }
 
-        private void sld_Volumen_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void sldVolumen_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (volume != null & output != null && output.PlaybackState != PlaybackState.Stopped)
+            if (volume != null && output != null &&
+                output.PlaybackState != PlaybackState.Stopped)
             {
-                //volume.Volume = (float)sld_Volumen.Value;
+                volume.Volume =
+                    (float)sldVolumen.Value;
+
             }
-            if (lbl_Volumen_Cantidad != null)
+            if (lblPorcentajeVolumen != null)
             {
-                lbl_Volumen_Cantidad.Text = ((int)(sld_Volumen.Value * 100)).ToString() + "%";
+                lblPorcentajeVolumen.Text =
+                    ((int)(sldVolumen.Value * 100)).ToString()
+                    + " %";
             }
+
         }
 
-        private void btn_FadeOut_Click(object sender, RoutedEventArgs e)
+        private void btnFadeOut_Click(object sender, RoutedEventArgs e)
         {
-            if (!fadingOut && fades != null && output != null)
+            if (!fadingOut &&
+                fades != null && output != null &&
+                output.PlaybackState == PlaybackState.Playing)
             {
                 fadingOut = true;
-                double milisegundosFadeOut = Double.Parse(txt_FadeOut.Text) * 1000.0;
+                double milisegundosFadeOut =
+                    Double.Parse(txtDuracionFadeOut.Text) *
+                    1000.0;
                 fades.BeginFadeOut(milisegundosFadeOut);
+
+            }
+        }
+
+        private void cbDelayActivo_Click(object sender, RoutedEventArgs e)
+        {
+            if (delay != null)
+            {
+                delay.Activo = (bool)cbDelayActivo.IsChecked;
+            }
+
+        }
+
+        private void sldDelayOffset_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (delay != null)
+            {
+                delay.OffsetMilisegundos = (int)sldDelayOffset.Value;
             }
         }
     }
