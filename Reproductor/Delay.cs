@@ -35,6 +35,7 @@ namespace Reproductor
         private int cantidadMuestrasBorradas = 0;
         public bool Activo { get; set; }
 
+        public float ........
 
         public WaveFormat WaveFormat
         {
@@ -55,6 +56,7 @@ namespace Reproductor
             tamañoBuffer =
                 fuente.WaveFormat.SampleRate * duracionBufferSegundos;
             Activo = true;
+            Ganancia = 0.5f;
         }
 
         public int Read(float[] buffer, int offset, int count)

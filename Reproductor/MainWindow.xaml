@@ -33,7 +33,7 @@
         <Slider x:Name="sldDelayOffset" HorizontalAlignment="Left" Margin="90,219,0,0" VerticalAlignment="Top" Width="117" Maximum="3000" SmallChange="1" LargeChange="500" Value="500" ValueChanged="sldDelayOffset_ValueChanged"/>
         <TextBlock x:Name="lblDelayOffset" HorizontalAlignment="Left" Margin="174,237,0,0" TextWrapping="Wrap" Text="500 ms" VerticalAlignment="Top" RenderTransformOrigin="1.866,1.295"/>
         <TextBlock HorizontalAlignment="Left" Margin="232,203,0,0" TextWrapping="Wrap" Text="Ganancia:" VerticalAlignment="Top"/>
-        <Slider x:Name="sldDelayGanancia" HorizontalAlignment="Left" Margin="225,219,0,0" VerticalAlignment="Top" Width="118"/>
+        <Slider x:Name="sldDelayGanancia" HorizontalAlignment="Left" Margin="225,219,0,0" VerticalAlignment="Top" Width="118" LargeChange="0.5" SmallChange="0" ValueChanged="sldDelayGanancia_ValueChanged"/>
         <TextBlock x:Name="lblDelayGanancia" HorizontalAlignment="Left" Margin="332,237,0,0" TextWrapping="Wrap" Text="0" VerticalAlignment="Top"/>
 
     </Grid>

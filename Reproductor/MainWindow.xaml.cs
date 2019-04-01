@@ -251,5 +251,13 @@ namespace Reproductor
                 delay.OffsetMilisegundos = (int)sldDelayOffset.Value;
             }
         }
+
+        private void sldDelayGanancia_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (lblDelayGanancia != null)
+            {
+                lblDelayGanancia.Text = sldDelayGanancia.Value.ToString();
+            }
+        }
     }
 }
